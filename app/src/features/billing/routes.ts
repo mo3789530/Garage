@@ -25,7 +25,7 @@ billingRoutes.post("/:id/payments", requireRole(["administrator", "service_advis
     if (!current) throw notFound("請求が見つかりません");
     const paid = Math.min(Number(current.total), Number(current.paid) + Number(input.amount));
     const payments = [
-      ...(current.payments || []),
+      ...(((current.payments as any[]) || [])),
       { amount: Number(input.amount), method: input.method, paidAt: new Date().toISOString() },
     ];
     const [updated] = await tx.update(invoices).set({

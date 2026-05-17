@@ -30,6 +30,7 @@ Drizzle schema から migration を生成する場合は次を使います。
 cd app
 DATABASE_URL="postgres://user:password@localhost:5432/garage_os" bun run db:generate
 DATABASE_URL="postgres://user:password@localhost:5432/garage_os" bun run db:migrate
+DATABASE_URL="postgres://user:password@localhost:5432/garage_os" bun run db:seed
 ```
 
 API を起動します。
@@ -74,6 +75,7 @@ npm run dev
 
 ```sh
 cd app && bun run build
+cd app && bun run typecheck
 cd app && bun test
 cd frontend && npm run build
 ```
@@ -81,5 +83,6 @@ cd frontend && npm run build
 RLSのDB確認は次を実行します。
 
 ```sh
-psql "$DATABASE_URL" -f app/db/rls_check.sql
+cd app
+DATABASE_URL="postgres://user:password@localhost:5432/garage_os" bun run db:check:rls
 ```

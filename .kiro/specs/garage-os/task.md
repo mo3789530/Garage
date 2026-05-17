@@ -27,11 +27,11 @@ This task list is based on the Garage OS design. The current repository already 
 
 ## P0 Stabilization
 
-- [ ] Verify Drizzle schema, SQL schema, and seed data are fully aligned.
-- [ ] Add repeatable migration generation and migration execution commands.
-- [ ] Add PostgreSQL integration tests for tenant isolation.
-- [ ] Add PostgreSQL integration tests for row-level security policies.
-- [ ] Add API tests that verify tenant A cannot read or mutate tenant B resources.
+- [x] Verify Drizzle schema, SQL schema, and seed data are fully aligned.
+- [x] Add repeatable migration generation and migration execution commands.
+- [x] Add PostgreSQL integration tests for tenant isolation.
+- [x] Add PostgreSQL integration tests for row-level security policies.
+- [x] Add API tests that verify tenant A cannot read or mutate tenant B resources.
 - [ ] Add API tests for RBAC permissions by role: owner, manager, mechanic, receptionist, viewer.
 - [ ] Remove or strictly guard any development-only tenant override behavior before production.
 - [ ] Standardize API error response shape across all feature routes.

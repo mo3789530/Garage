@@ -21,7 +21,7 @@ export const tenantMiddleware: MiddlewareHandler<ApiEnv> = async (c, next) => {
   const token = authorization.startsWith("Bearer ") ? authorization.slice("Bearer ".length) : "";
 
   if (token) {
-    const payload = await verify(token, jwtSecret()).catch(() => null);
+    const payload = await verify(token, jwtSecret(), "HS256").catch(() => null);
     if (!payload || typeof payload.sub !== "string" || typeof payload.tenantId !== "string") {
       return c.json(apiErrorBody("UNAUTHORIZED", "invalid token"), 401);
     }

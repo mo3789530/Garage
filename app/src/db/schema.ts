@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   date,
   index,
   integer,
@@ -46,20 +47,31 @@ export const tenantMemberships = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
+    roleCheck: check(
+      "tenant_memberships_role_check",
+      sql`${table.role} in ('administrator', 'manager', 'service_advisor', 'mechanic')`,
+    ),
+    userIdx: index("idx_tenant_memberships_user").on(table.userId, table.tenantId),
     tenantUserUnique: uniqueIndex("tenant_memberships_tenant_user_unique").on(table.tenantId, table.userId),
   }),
 );
 
-export const authAuditLogs = pgTable("auth_audit_logs", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").references(() => tenants.id, { onDelete: "set null" }),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
-  email: text("email").notNull().default(""),
-  event: text("event").notNull(),
-  ipAddress: text("ip_address").notNull().default(""),
-  userAgent: text("user_agent").notNull().default(""),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const authAuditLogs = pgTable(
+  "auth_audit_logs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id").references(() => tenants.id, { onDelete: "set null" }),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    email: text("email").notNull().default(""),
+    event: text("event").notNull(),
+    ipAddress: text("ip_address").notNull().default(""),
+    userAgent: text("user_agent").notNull().default(""),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdx: index("idx_auth_audit_logs_user").on(table.userId, table.createdAt),
+  }),
+);
 
 export const customers = pgTable(
   "customers",
@@ -170,25 +182,37 @@ export const parts = pgTable(
   }),
 );
 
-export const partAdjustments = pgTable("part_adjustments", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
-  partId: uuid("part_id").notNull().references(() => parts.id, { onDelete: "cascade" }),
-  quantityDelta: integer("quantity_delta").notNull(),
-  reason: text("reason").notNull(),
-  memo: text("memo").notNull().default(""),
-  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
-});
+export const partAdjustments = pgTable(
+  "part_adjustments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
+    partId: uuid("part_id").notNull().references(() => parts.id, { onDelete: "cascade" }),
+    quantityDelta: integer("quantity_delta").notNull(),
+    reason: text("reason").notNull(),
+    memo: text("memo").notNull().default(""),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
+  },
+  (table) => ({
+    tenantPartIdx: index("idx_part_adjustments_tenant_part").on(table.tenantId, table.partId, table.createdAt),
+  }),
+);
 
-export const purchaseOrders = pgTable("purchase_orders", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
-  supplierName: text("supplier_name").notNull(),
-  status: text("status").notNull().default("draft"),
-  expectedDeliveryAt: date("expected_delivery_at", { mode: "string" }),
-  lineItems: jsonb("line_items").notNull().default(sql`'[]'::jsonb`),
-  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
-});
+export const purchaseOrders = pgTable(
+  "purchase_orders",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
+    supplierName: text("supplier_name").notNull(),
+    status: text("status").notNull().default("draft"),
+    expectedDeliveryAt: date("expected_delivery_at", { mode: "string" }),
+    lineItems: jsonb("line_items").notNull().default(sql`'[]'::jsonb`),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
+  },
+  (table) => ({
+    tenantStatusIdx: index("idx_purchase_orders_tenant_status").on(table.tenantId, table.status, table.createdAt),
+  }),
+);
 
 export const estimates = pgTable("estimates", {
   id: uuid("id").primaryKey().defaultRandom(),

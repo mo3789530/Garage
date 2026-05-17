@@ -1,0 +1,303 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  @apply m-0 bg-slate-50 text-slate-950 antialiased;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.primary {
+  @apply border-teal-700 bg-teal-700 text-white font-semibold hover:bg-teal-800;
+}
+
+.loading {
+  @apply grid min-h-screen place-items-center text-slate-500;
+}
+
+.app-shell {
+  @apply grid min-h-screen;
+  grid-template-columns: 280px minmax(0, 1fr);
+}
+
+.sidebar {
+  @apply sticky top-0 h-screen border-r border-slate-200 bg-slate-950 px-5 py-6 text-slate-100;
+}
+
+.brand {
+  @apply mb-8 flex items-center gap-3;
+}
+
+.brand-mark {
+  @apply grid h-11 w-11 place-items-center rounded-lg bg-amber-500 font-black text-slate-950;
+}
+
+.brand strong,
+.brand span {
+  @apply block;
+}
+
+.brand span {
+  @apply text-sm text-slate-400;
+}
+
+.nav {
+  @apply grid gap-2;
+}
+
+.nav button {
+  @apply w-full justify-start border-transparent bg-transparent text-left text-slate-200;
+}
+
+.nav button.active,
+.nav button:hover {
+  @apply bg-slate-800 text-white;
+}
+
+.workspace {
+  @apply min-w-0 p-7;
+}
+
+.topbar {
+  @apply mb-6 flex items-center justify-between gap-5;
+}
+
+.topbar-actions {
+  @apply flex items-center gap-2;
+}
+
+.eyebrow {
+  @apply mb-1 mt-0 text-xs font-semibold text-slate-500;
+  letter-spacing: 0;
+}
+
+h1,
+h2,
+p {
+  @apply mt-0;
+}
+
+h1 {
+  @apply mb-0 text-3xl font-semibold tracking-normal;
+}
+
+h2 {
+  @apply mb-0 text-base font-semibold tracking-normal;
+}
+
+.tenant-badge,
+.count-pill,
+.status {
+  @apply inline-flex min-h-7 items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600;
+}
+
+.tenant-badge {
+  @apply bg-amber-50 text-amber-800;
+}
+
+.status.warning {
+  @apply bg-amber-50 text-amber-800;
+}
+
+.status.info {
+  @apply bg-sky-100 text-sky-800;
+}
+
+.status.success {
+  @apply bg-emerald-100 text-emerald-800;
+}
+
+.kpi-grid {
+  @apply mb-5 grid gap-3.5;
+  grid-template-columns: repeat(6, minmax(140px, 1fr));
+}
+
+.kpi-card {
+  @apply min-h-32 rounded-lg border border-slate-200 bg-white p-4 shadow-sm;
+}
+
+.kpi-card span,
+.kpi-card small {
+  @apply block text-slate-500;
+}
+
+.kpi-card strong {
+  @apply my-2 block text-3xl font-semibold;
+}
+
+.section-grid {
+  @apply grid gap-5;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.section-grid.wide-left {
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+}
+
+.follow-grid {
+  @apply mt-5;
+}
+
+.panel {
+  @apply rounded-lg border-slate-200 bg-white shadow-sm;
+}
+
+.panel-header,
+.row-main,
+.action-row,
+.toolbar {
+  @apply flex items-center justify-between gap-3;
+}
+
+.toolbar {
+  @apply mb-4;
+}
+
+.list {
+  @apply grid gap-2.5;
+}
+
+.panel > .list,
+.panel .list {
+  @apply mt-0;
+}
+
+.list-row {
+  @apply flex items-center justify-between gap-3.5 rounded-lg border border-slate-200 bg-slate-50/60 p-3;
+}
+
+.list-row.stacked {
+  @apply block;
+}
+
+.list-row strong,
+.list-row span {
+  @apply block;
+}
+
+.list-row span {
+  @apply text-sm text-slate-500;
+}
+
+.vehicle-stack {
+  @apply mt-3 grid gap-2;
+}
+
+.vehicle-chip {
+  @apply grid gap-2 rounded-lg bg-slate-100 px-2.5 py-2;
+  grid-template-columns: 1.2fr 1fr 0.8fr 1fr;
+}
+
+.form-grid {
+  @apply mt-4 grid gap-2.5;
+}
+
+input,
+select,
+textarea {
+  @apply min-h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-950 outline-none transition-colors focus:border-teal-700 focus:ring-2 focus:ring-teal-700/15;
+}
+
+textarea {
+  @apply min-h-24 resize-y;
+}
+
+.search-field {
+  @apply grid w-full max-w-md gap-1 text-sm font-semibold text-slate-500;
+}
+
+.check-row {
+  @apply flex items-center gap-2.5;
+}
+
+.check-row input {
+  @apply min-h-0 w-auto;
+}
+
+.action-row {
+  @apply mt-3;
+}
+
+.toast {
+  @apply pointer-events-none fixed bottom-5 right-5 translate-y-3 rounded-lg bg-slate-950 px-4 py-3 text-white opacity-0 transition-all;
+}
+
+.toast.show {
+  @apply translate-y-0 opacity-100;
+}
+
+.login-shell {
+  @apply grid min-h-screen place-items-center bg-slate-50 p-6;
+}
+
+.login-card {
+  @apply w-full max-w-md;
+}
+
+.form-error {
+  @apply mb-0 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700;
+}
+
+@media (max-width: 1180px) {
+  .kpi-grid {
+    grid-template-columns: repeat(3, minmax(160px, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    @apply static h-auto;
+  }
+
+  .nav {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .workspace {
+    @apply p-5;
+  }
+
+  .section-grid,
+  .section-grid.wide-left {
+    grid-template-columns: 1fr;
+  }
+
+  .vehicle-chip {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar,
+  .panel-header,
+  .list-row,
+  .row-main,
+  .action-row {
+    @apply flex-col items-stretch;
+  }
+
+  .nav {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}

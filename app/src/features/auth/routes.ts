@@ -60,7 +60,7 @@ authRoutes.get("/me", async (c) => {
   const token = authorization.startsWith("Bearer ") ? authorization.slice("Bearer ".length) : "";
   if (!token) return c.json(apiErrorBody("UNAUTHORIZED", "authorization token is required"), 401);
 
-  const payload = await verify(token, jwtSecret()).catch(() => null);
+  const payload = await verify(token, jwtSecret(), "HS256").catch(() => null);
   if (!payload || typeof payload.sub !== "string") {
     return c.json(apiErrorBody("UNAUTHORIZED", "invalid token"), 401);
   }
