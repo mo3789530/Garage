@@ -1,6 +1,7 @@
 import type { Bootstrap, SessionUser } from "./types";
 
-const TENANT_ID = import.meta.env.VITE_TENANT_ID || "00000000-0000-0000-0000-000000000001";
+const env = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env || {};
+const TENANT_ID = env.VITE_TENANT_ID || "00000000-0000-0000-0000-000000000001";
 const TOKEN_KEY = "garage-os-token";
 
 export function getToken() {

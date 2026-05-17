@@ -1,5 +1,6 @@
 import { Panel } from "../../components/panel";
 import { ReservationRow } from "../../components/domain-rows";
+import { EmptyState } from "../../components/state";
 import { yen } from "../../lib/format";
 import type { Bootstrap } from "../../types";
 
@@ -26,9 +27,11 @@ export function DashboardView({ data }: { data: Bootstrap }) {
       </section>
       <div className="section-grid">
         <Panel title="予約" count={`${data.reservations.length}件`}>
+          {!data.reservations.length && <EmptyState title="予約がありません" detail="予約が作成されるとここに表示されます。" />}
           {data.reservations.map((reservation) => <ReservationRow key={reservation.id} data={data} reservation={reservation} />)}
         </Panel>
         <Panel title="車検リマインド" count={`${data.reminders.length}件`}>
+          {!data.reminders.length && <EmptyState title="対象車両がありません" detail="期限内の未送信リマインド候補はありません。" />}
           {data.reminders.map((reminder) => (
             <article className="list-row" key={reminder.vehicle.id}>
               <div>

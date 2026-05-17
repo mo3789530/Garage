@@ -1,5 +1,6 @@
 import type { FormEvent } from "react";
 import { Panel } from "../../components/panel";
+import { EmptyState } from "../../components/state";
 import { Button } from "../../components/ui/button";
 import { yen } from "../../lib/format";
 import type { Bootstrap } from "../../types";
@@ -65,6 +66,7 @@ export function InventoryView(props: {
       </div>
       <div className="section-grid wide-left">
         <Panel title="部品在庫" count={`${props.parts.length}件`}>
+          {!props.parts.length && <EmptyState title="部品がありません" detail="検索条件を変えるか、部品を登録してください。" />}
           {props.parts.map((part) => (
             <article className="list-row" key={part.id}>
               <div><strong>{part.name}</strong><span>{part.number} / {part.compatibility} / {yen(part.unitPrice)}</span></div>
@@ -95,6 +97,7 @@ export function InventoryView(props: {
           </form>
         </Panel>}
         <Panel title="低在庫・発注" count={`${props.data.lowStockParts.length}件`}>
+          {!props.data.lowStockParts.length && <EmptyState title="低在庫はありません" detail="最低在庫を下回る部品はありません。" />}
           {props.data.lowStockParts.map((part) => (
             <article className="list-row" key={part.id}>
               <div><strong>{part.name}</strong><span>最小 {part.minQuantity} / 現在 {part.quantity}</span></div>
@@ -113,6 +116,7 @@ export function InventoryView(props: {
       </div>
       <div className="section-grid follow-grid">
         <Panel title="発注書" count={`${props.data.purchaseOrders.length}件`}>
+          {!props.data.purchaseOrders.length && <EmptyState title="発注書がありません" detail="発注書を作成するとここに表示されます。" />}
           {props.data.purchaseOrders.map((order) => (
             <article className="list-row" key={order.id}>
               <div><strong>{order.supplierName}</strong><span>{order.lineItems.length}明細 / 納期 {order.expectedDeliveryAt || "未定"}</span></div>

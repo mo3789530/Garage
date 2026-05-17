@@ -1,6 +1,7 @@
 import type { FormEvent } from "react";
 import { WorkOrderRow } from "../../components/domain-rows";
 import { Panel } from "../../components/panel";
+import { EmptyState } from "../../components/state";
 import { Button } from "../../components/ui/button";
 import type { Bootstrap } from "../../types";
 
@@ -22,6 +23,7 @@ export function WorkOrdersView(props: {
   return (
     <div className="section-grid wide-left">
       <Panel title="作業指示" count={`${props.data.workOrders.length}件`}>
+        {!props.data.workOrders.length && <EmptyState title="作業指示がありません" detail="予約作成時に作業指示が生成されます。" />}
         {props.data.workOrders.map((workOrder) => <WorkOrderRow key={workOrder.id} data={props.data} workOrder={workOrder} onAdvance={props.onAdvance} canAdvance={props.canAdvance} />)}
       </Panel>
       {props.canEstimate && <Panel title="AI見積">

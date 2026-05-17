@@ -72,9 +72,9 @@ Route-level authorization は `requireRole([...])` middleware で行います。
 
 ## Development Fallback
 
-`NODE_ENV !== "production"` の場合のみ、JWTなしでも `X-Tenant-Id` header による開発用アクセスを許可します。この場合 role は `administrator` として扱われます。
+`NODE_ENV !== "production"` かつ `ALLOW_DEV_TENANT_OVERRIDE=true` の場合のみ、JWTなしでも `X-Tenant-Id` header による開発用アクセスを許可します。この場合 role は `administrator` として扱われます。
 
-Production ではJWTが必須です。また `JWT_SECRET` が未設定の場合、productionでは起動しない想定です。
+Production では `ALLOW_DEV_TENANT_OVERRIDE=true` が設定されていても無視され、JWTが必須です。また `JWT_SECRET` が未設定の場合、productionでは起動しない想定です。
 
 ## RLS
 

@@ -1,6 +1,7 @@
 import type { FormEvent } from "react";
 import { VehicleChip } from "../../components/domain-rows";
 import { Panel } from "../../components/panel";
+import { EmptyState } from "../../components/state";
 import { Button } from "../../components/ui/button";
 import type { Bootstrap, Customer } from "../../types";
 
@@ -41,6 +42,7 @@ export function CustomersView(props: {
       </div>
       <div className="section-grid wide-left">
         <Panel title="顧客一覧" count={`${props.customers.length}件`}>
+          {!props.customers.length && <EmptyState title="顧客がありません" detail="検索条件を変えるか、新規登録してください。" />}
           {props.customers.map((customer) => {
             const vehicles = props.data.vehicles.filter((vehicle) => vehicle.customerId === customer.id);
             return (

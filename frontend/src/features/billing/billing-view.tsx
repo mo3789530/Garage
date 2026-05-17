@@ -1,5 +1,6 @@
 import type { FormEvent } from "react";
 import { Panel } from "../../components/panel";
+import { EmptyState } from "../../components/state";
 import { Button } from "../../components/ui/button";
 import { yen } from "../../lib/format";
 import type { Bootstrap } from "../../types";
@@ -23,6 +24,7 @@ export function BillingView(props: {
   return (
     <div className="section-grid">
       <Panel title="見積・請求" count={`${props.data.estimates.length + props.data.invoices.length}件`}>
+        {!openEstimates.length && !props.data.invoices.length && <EmptyState title="見積・請求がありません" detail="AI見積を作成するとここに表示されます。" />}
         {openEstimates.map((estimate) => (
           <article className="list-row" key={estimate.id}>
             <div><strong>見積 {estimate.id}</strong><span>{yen(estimate.total)} / 信頼度 {Math.round(estimate.confidence * 100)}%</span></div>

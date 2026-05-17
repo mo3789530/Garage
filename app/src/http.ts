@@ -13,7 +13,25 @@ export type ApiEnv = {
     tenantId: string;
     userId: string;
     role: Role;
+    requestId: string;
   };
+};
+
+export const requestContextMiddleware: MiddlewareHandler<ApiEnv> = async (c, next) => {
+  const requestId = c.req.header("x-request-id") || crypto.randomUUID();
+  const startedAt = performance.now();
+  c.set("requestId", requestId);
+  c.header("X-Request-Id", requestId);
+
+  await next();
+
+  logRequest({
+    requestId,
+    method: c.req.method,
+    path: new URL(c.req.url).pathname,
+    status: c.res.status,
+    durationMs: Math.round(performance.now() - startedAt),
+  });
 };
 
 export const tenantMiddleware: MiddlewareHandler<ApiEnv> = async (c, next) => {
@@ -47,7 +65,7 @@ export const tenantMiddleware: MiddlewareHandler<ApiEnv> = async (c, next) => {
     return;
   }
 
-  if (process.env.NODE_ENV === "production") {
+  if (!isDevTenantOverrideEnabled()) {
     return c.json(apiErrorBody("UNAUTHORIZED", "authorization token is required"), 401);
   }
 
@@ -81,6 +99,10 @@ export function jwtSecret() {
     throw new Error("JWT_SECRET is required in production");
   }
   return secret || "garage-os-dev-secret";
+}
+
+export function isDevTenantOverrideEnabled(env: Partial<Record<"ALLOW_DEV_TENANT_OVERRIDE" | "NODE_ENV", string>> = process.env) {
+  return env.NODE_ENV !== "production" && env.ALLOW_DEV_TENANT_OVERRIDE === "true";
 }
 
 export async function findUserMembership(email: string) {
@@ -141,4 +163,18 @@ function isUuid(value: string) {
 
 function isRole(value: string): value is Role {
   return roles.includes(value as Role);
+}
+
+function logRequest(entry: {
+  requestId: string;
+  method: string;
+  path: string;
+  status: number;
+  durationMs: number;
+}) {
+  console.info(JSON.stringify({
+    level: "info",
+    message: "api_request",
+    ...entry,
+  }));
 }

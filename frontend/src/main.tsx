@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { api, clearToken, setToken } from "./api";
 import { Badge } from "./components/ui/badge";
 import { Button } from "./components/ui/button";
+import { ErrorState } from "./components/state";
 import { LoginView } from "./features/auth/login-view";
 import { BillingView } from "./features/billing/billing-view";
 import { CustomersView } from "./features/customers/customers-view";
@@ -41,8 +42,18 @@ function App() {
   const [partQuery, setPartQuery] = useState("");
   const [toast, setToast] = useState("");
   const [loginError, setLoginError] = useState("");
+  const [bootError, setBootError] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const refresh = async () => setData(await api.bootstrap());
+  const refresh = async () => {
+    setBootError("");
+    try {
+      setData(await api.bootstrap());
+    } catch (error) {
+      setBootError(error instanceof Error ? error.message : "データを取得できませんでした");
+      throw error;
+    }
+  };
 
   useEffect(() => {
     api.me()
@@ -64,17 +75,21 @@ function App() {
 
   const run = async (action: () => Promise<unknown>, message: string) => {
     try {
+      setBusy(true);
       await action();
       await refresh();
       notify(message);
     } catch (error) {
       notify(error instanceof Error ? error.message : "処理に失敗しました");
+    } finally {
+      setBusy(false);
     }
   };
 
   const login = async (payload: unknown) => {
     try {
       setLoginError("");
+      setBusy(true);
       const result = await api.login(payload);
       setToken(result.token);
       setUser(result.user);
@@ -82,6 +97,8 @@ function App() {
       notify("ログインしました");
     } catch (error) {
       setLoginError(error instanceof Error ? error.message : "ログインに失敗しました");
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -118,6 +135,9 @@ function App() {
   }, [data, partQuery]);
 
   if (!data) {
+    if (bootError) {
+      return <ErrorState message={bootError} onRetry={() => refresh().catch(() => undefined)} />;
+    }
     return <main className="loading">Garage OS を起動中</main>;
   }
 
@@ -208,6 +228,7 @@ function App() {
         )}
       </main>
       <div className={`toast ${toast ? "show" : ""}`}>{toast}</div>
+      {busy && <div className="busy-bar">処理中</div>}
     </div>
   );
 }

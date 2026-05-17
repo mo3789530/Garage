@@ -9,6 +9,8 @@
     "db:check:rls": "psql \"$DATABASE_URL\" -f db/rls_check.sql",
     "build": "bun build src/index.ts --target bun --outdir /private/tmp/garage-api-build",
     "typecheck": "bunx tsc --noEmit --skipLibCheck",
+    "lint": "bun run typecheck",
+    "ci": "bun run typecheck && bun test && bun run build",
     "test": "bun test",
     "test:integration": "bun test src/integration"
   },

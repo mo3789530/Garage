@@ -47,7 +47,7 @@ cd frontend
 npm run dev
 ```
 
-開発用テナントは `X-Tenant-Id: 00000000-0000-0000-0000-000000000001` を使います。フロントでは `VITE_TENANT_ID` で変更できます。
+JWTなしの開発用テナントアクセスを使う場合は、API起動時に `ALLOW_DEV_TENANT_OVERRIDE=true` を明示してください。この場合のみ `X-Tenant-Id: 00000000-0000-0000-0000-000000000001` が使えます。フロントでは `VITE_TENANT_ID` で変更できます。本番環境ではこの上書きは無効です。
 
 デモログイン:
 
@@ -77,7 +77,12 @@ npm run dev
 cd app && bun run build
 cd app && bun run typecheck
 cd app && bun test
+cd app && bun run lint
+cd app && bun run ci
+cd frontend && npm run lint
+cd frontend && npm run test
 cd frontend && npm run build
+cd frontend && npm run ci
 ```
 
 RLSのDB確認は次を実行します。

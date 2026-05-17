@@ -32,14 +32,14 @@ This task list is based on the Garage OS design. The current repository already 
 - [x] Add PostgreSQL integration tests for tenant isolation.
 - [x] Add PostgreSQL integration tests for row-level security policies.
 - [x] Add API tests that verify tenant A cannot read or mutate tenant B resources.
-- [ ] Add API tests for RBAC permissions by role: owner, manager, mechanic, receptionist, viewer.
-- [ ] Remove or strictly guard any development-only tenant override behavior before production.
-- [ ] Standardize API error response shape across all feature routes.
-- [ ] Add request ID propagation and structured logging for all API requests.
-- [ ] Add validation coverage for all create and update endpoints.
-- [ ] Add frontend loading, empty, and error states for every split screen.
-- [ ] Add frontend authentication persistence and logout behavior tests.
-- [ ] Add CI commands for backend tests, backend build, frontend build, and linting.
+- [x] Add API tests for RBAC permissions by role: administrator, manager, service_advisor, mechanic.
+- [x] Remove or strictly guard any development-only tenant override behavior before production.
+- [x] Standardize API error response shape across all feature routes.
+- [x] Add request ID propagation and structured logging for all API requests.
+- [x] Add validation coverage for all create endpoints. Update endpoint coverage will be added when update endpoints are implemented.
+- [x] Add frontend loading, empty, and error states for every split screen.
+- [x] Add frontend authentication persistence and logout behavior tests.
+- [x] Add CI commands for backend tests, backend build, frontend build, and linting.
 
 ## P1 Customer And Vehicle Management
 
@@ -163,6 +163,7 @@ This task list is based on the Garage OS design. The current repository already 
 
 ## P2 Multi-Tenant Platform
 
+- [ ] Separate system operations administrator APIs from tenant user APIs with distinct route namespaces, authentication guards, and authorization policies.
 - [ ] Add tenant settings for name, logo, locale, timezone, currency, tax rules, and business hours.
 - [ ] Add tenant invitation flow.
 - [ ] Add tenant member management UI.

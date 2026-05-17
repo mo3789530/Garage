@@ -34,6 +34,8 @@ const rows = {
   workOrderA: "00000000-0000-0000-0000-000000000261",
   workOrderB: "00000000-0000-0000-0000-000000000262",
   invoiceA: "00000000-0000-0000-0000-000000000271",
+  estimateA: "00000000-0000-0000-0000-000000000272",
+  draftEstimateA: "00000000-0000-0000-0000-000000000273",
 };
 
 let sql: SQL;
@@ -234,6 +236,49 @@ maybeDescribe("PostgreSQL tenant isolation and RBAC", () => {
     expect(partsResponse.status).toBe(200);
     expect(createPartResponse.status).toBe(403);
   });
+
+  test("enforces RBAC across every protected mutation route", async () => {
+    const tokens = {
+      administrator: await tokenFor(users.administrator, tenants.a, "administrator"),
+      manager: await tokenFor(users.manager, tenants.a, "manager"),
+      serviceAdvisor: await tokenFor(users.serviceAdvisor, tenants.a, "service_advisor"),
+      mechanic: await tokenFor(users.mechanic, tenants.a, "mechanic"),
+    };
+
+    for (const makeRequest of protectedMutationRequests()) {
+      const managerResponse = await makeRequest(tokens.manager);
+      expect(managerResponse.status).toBe(403);
+    }
+
+    for (const makeRequest of protectedMutationRequests()) {
+      const mechanicResponse = await makeRequest(tokens.mechanic);
+      expect(mechanicResponse.status).toBe(makeRequest.mechanicAllowed ? 200 : 403);
+    }
+
+    const administratorChecks = [
+      protectedMutationRequests.customer("ADMIN"),
+      protectedMutationRequests.part("ADMIN"),
+      protectedMutationRequests.adjustment("ADMIN"),
+      protectedMutationRequests.purchaseOrder("ADMIN"),
+      protectedMutationRequests.aiEstimate("ADMIN"),
+    ];
+    for (const makeRequest of administratorChecks) {
+      const response = await makeRequest(tokens.administrator);
+      expect([200, 201]).toContain(response.status);
+    }
+
+    const serviceAdvisorChecks = [
+      protectedMutationRequests.customer("ADVISOR"),
+      protectedMutationRequests.reservation("ADVISOR", "2027-01-03T10:00:00.000Z"),
+      protectedMutationRequests.part("ADVISOR"),
+      protectedMutationRequests.payment("ADVISOR"),
+      protectedMutationRequests.finalizeEstimate(),
+    ];
+    for (const makeRequest of serviceAdvisorChecks) {
+      const response = await makeRequest(tokens.serviceAdvisor);
+      expect([200, 201]).toContain(response.status);
+    }
+  });
 });
 
 async function apiJson(path: string, token: string) {
@@ -261,6 +306,142 @@ function tokenFor(userId: string, tenantId: string, role: string) {
     exp: Math.floor(Date.now() / 1000) + 60 * 60,
   }, jwtSecret());
 }
+
+function protectedMutationRequests() {
+  return [
+    protectedMutationRequests.customer("DENY"),
+    protectedMutationRequests.reservation("DENY", "2027-01-04T10:00:00.000Z"),
+    protectedMutationRequests.workOrderAdvance(),
+    protectedMutationRequests.part("DENY"),
+    protectedMutationRequests.adjustment("DENY"),
+    protectedMutationRequests.purchaseOrder("DENY"),
+    protectedMutationRequests.aiEstimate("DENY"),
+    protectedMutationRequests.finalizeEstimate(),
+    protectedMutationRequests.payment("DENY"),
+  ];
+}
+
+protectedMutationRequests.customer = (suffix: string) =>
+  Object.assign(
+    (token: string) =>
+      api("/api/customers", token, {
+        method: "POST",
+        body: {
+          name: "RBAC Customer " + suffix,
+          phone: "090-0201-" + suffix.padStart(4, "0").slice(0, 4),
+          vehicle: {
+            make: "Toyota",
+            model: "Aqua",
+            year: 2021,
+            registrationNumber: "IT-RBAC-CUSTOMER-" + suffix,
+            inspectionExpiresAt: "2026-12-31",
+          },
+        },
+      }),
+    { mechanicAllowed: false },
+  );
+
+protectedMutationRequests.reservation = (suffix: string, startsAt: string) =>
+  Object.assign(
+    (token: string) =>
+      api("/api/reservations", token, {
+        method: "POST",
+        body: {
+          customerId: rows.customerA,
+          vehicleId: rows.vehicleA,
+          mechanicId: rows.mechanicA,
+          serviceType: "点検",
+          startsAt,
+          notes: "RBAC reservation " + suffix,
+        },
+      }),
+    { mechanicAllowed: false },
+  );
+
+protectedMutationRequests.workOrderAdvance = () =>
+  Object.assign(
+    (token: string) => api("/api/work-orders/" + rows.workOrderA + "/advance", token, { method: "PATCH" }),
+    { mechanicAllowed: true },
+  );
+
+protectedMutationRequests.part = (suffix: string) =>
+  Object.assign(
+    (token: string) =>
+      api("/api/parts", token, {
+        method: "POST",
+        body: {
+          number: "IT-RBAC-PART-" + suffix,
+          name: "RBAC Part " + suffix,
+          compatibility: "",
+          quantity: 2,
+          minQuantity: 1,
+          unitPrice: 1000,
+        },
+      }),
+    { mechanicAllowed: false },
+  );
+
+protectedMutationRequests.adjustment = (suffix: string) =>
+  Object.assign(
+    (token: string) =>
+      api("/api/parts/" + rows.partA + "/adjustments", token, {
+        method: "POST",
+        body: {
+          quantityDelta: 1,
+          reason: "correction",
+          memo: "RBAC adjustment " + suffix,
+        },
+      }),
+    { mechanicAllowed: false },
+  );
+
+protectedMutationRequests.purchaseOrder = (suffix: string) =>
+  Object.assign(
+    (token: string) =>
+      api("/api/parts/purchase-orders", token, {
+        method: "POST",
+        body: {
+          supplierName: "RBAC Supplier " + suffix,
+          expectedDeliveryAt: "2027-01-10",
+          lineItems: [{ partId: rows.partA, quantity: 1, unitPrice: 1000 }],
+        },
+      }),
+    { mechanicAllowed: false },
+  );
+
+protectedMutationRequests.aiEstimate = (suffix: string) =>
+  Object.assign(
+    (token: string) =>
+      api("/api/estimates/ai", token, {
+        method: "POST",
+        body: {
+          workOrderId: rows.workOrderA,
+          symptoms: "RBAC brake noise " + suffix,
+          errorCodes: "",
+        },
+      }),
+    { mechanicAllowed: false },
+  );
+
+protectedMutationRequests.finalizeEstimate = () =>
+  Object.assign(
+    (token: string) => api("/api/estimates/" + rows.draftEstimateA + "/finalize", token, { method: "POST" }),
+    { mechanicAllowed: false },
+  );
+
+protectedMutationRequests.payment = (suffix: string) =>
+  Object.assign(
+    (token: string) =>
+      api("/api/invoices/" + rows.invoiceA + "/payments", token, {
+        method: "POST",
+        body: {
+          amount: 100,
+          method: "cash",
+          memo: "RBAC payment " + suffix,
+        },
+      }),
+    { mechanicAllowed: false },
+  );
 
 async function resetFixtures() {
   for (const tenantId of Object.values(tenants)) {
@@ -436,7 +617,6 @@ async function seedTenantRows(tenantId: string, input: {
   `;
 
   if (input.invoice) {
-    const estimateId = "00000000-0000-0000-0000-000000000272";
     await sql`
       insert into estimates (
         id,
@@ -449,11 +629,25 @@ async function seedTenantRows(tenantId: string, input: {
         tax,
         total
       )
-      values (${estimateId}, ${tenantId}, ${input.workOrder}, 'finalized', 'integration test', 0.5, 1000, 100, 1100)
+      values (${rows.estimateA}, ${tenantId}, ${input.workOrder}, 'finalized', 'integration test', 0.5, 1000, 100, 1100)
+    `;
+    await sql`
+      insert into estimates (
+        id,
+        tenant_id,
+        work_order_id,
+        status,
+        symptoms,
+        confidence,
+        subtotal,
+        tax,
+        total
+      )
+      values (${rows.draftEstimateA}, ${tenantId}, ${input.workOrder}, 'draft', 'integration draft', 0.5, 2000, 200, 2200)
     `;
     await sql`
       insert into invoices (id, tenant_id, number, estimate_id, work_order_id, subtotal, tax, total)
-      values (${input.invoice}, ${tenantId}, 'IT-INV-201', ${estimateId}, ${input.workOrder}, 1000, 100, 1100)
+      values (${input.invoice}, ${tenantId}, 'IT-INV-201', ${rows.estimateA}, ${input.workOrder}, 1000, 100, 1100)
     `;
   }
 }

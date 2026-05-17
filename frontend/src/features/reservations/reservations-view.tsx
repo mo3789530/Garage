@@ -1,6 +1,7 @@
 import type { FormEvent } from "react";
 import { ReservationRow } from "../../components/domain-rows";
 import { Panel } from "../../components/panel";
+import { EmptyState } from "../../components/state";
 import { Button } from "../../components/ui/button";
 import { todayDateTimeLocal } from "../../lib/format";
 import type { Bootstrap } from "../../types";
@@ -25,6 +26,7 @@ export function ReservationsView({ data, canMutate, onSubmit }: { data: Bootstra
   return (
     <div className="section-grid">
       <Panel title="予約カレンダー" count={`${data.reservations.length}件`}>
+        {!data.reservations.length && <EmptyState title="予約がありません" detail="新しい予約を作成すると一覧に表示されます。" />}
         {data.reservations.map((reservation) => <ReservationRow key={reservation.id} data={data} reservation={reservation} />)}
       </Panel>
       {canMutate && <Panel title="予約作成">
